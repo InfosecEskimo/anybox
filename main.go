@@ -6,11 +6,29 @@ import (
   "io/ioutil"
   "encoding/json"
   "github.com/franela/goreq"
+  "github.com/joho/godotenv"
+  "log"
+  "os"
 )
 
-const (
-  port = ":8080"
-)
+type envObj struct {
+  PORT string
+  URL string
+}
+
+func loadEnv() {
+  err := godotenv.Load()
+  if err != nil {
+    log.Fatal("Error loading .env file, see .env.example")
+    return false
+  }
+  env := &envObj{
+    PORT = os.Getenv("PORT"),
+    URL = os.Getenv("URL")
+  }
+
+  return env
+}
 
 func elk_search(w http.ResponseWriter, r *http.Request) {
   res, err := goreq.Request{
@@ -25,28 +43,6 @@ func elk_search(w http.ResponseWriter, r *http.Request) {
   //return res.Response
 }
 
-func get_content(w http.ResponseWriter, r *http.Request) {
-    // json data
-    url := "http://localhost:9200/new-catalog/_search"
-
-    res, err := http.Get(url)
-
-    if err != nil {
-        panic(err.Error())
-    }
-
-    body, err := ioutil.ReadAll(res.Body)
-
-    if err != nil {
-        panic(err.Error())
-    }
-
-    data := "" //tracks
-    json.Unmarshal(res.Body, data)
-    fmt.Printf("Results: %v\n", data)
-    //os.Exit(0)
-}
-
 func init() {
   fmt.Printf("Started server at http://localhost%v.\n", port)
   http.HandleFunc("/", get_content)
@@ -54,5 +50,5 @@ func init() {
 }
 
 func main() {
-  //get_content()
+  env = loadEnv()
 }
